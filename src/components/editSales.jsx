@@ -56,7 +56,7 @@ const EditSales = ({ object }) => {
   const [invoiceDate, setInvoiceDate] = useState(object.invoice_date);
 
   const handleFormSubmit = (event) => {
-    if (paymentStatus == "Paid") {
+    if (object.paid) {
       toast({
         title: "View Only Form",
         description: "You cannot edit this form.",
@@ -69,8 +69,6 @@ const EditSales = ({ object }) => {
 
     event.preventDefault();
 
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
     const dateTime = new Date(Date.now());
     const time = getTime(dateTime.getHours(), dateTime.getMinutes());
     const day = dateTime.getDate();
@@ -183,7 +181,7 @@ const EditSales = ({ object }) => {
                     onChange={handleInputChange}
                     disabled={object.paid}
                   />
-                  
+
                   {showList && (
                     <Box
                       border="1px"
@@ -203,7 +201,6 @@ const EditSales = ({ object }) => {
                       ))}
                     </Box>
                   )}
-                  
                 </FormControl>
               </FormControl>
               <FormControl mt={4} isRequired>
@@ -259,7 +256,17 @@ const EditSales = ({ object }) => {
             <Button colorScheme="blue" mr={3} onClick={closeForm}>
               Close
             </Button>
-            <Button type="submit" form="sales-order-form" colorScheme="orange">
+            <Button
+              type={object.paid ? null : "submit"}
+              form="sales-order-form"
+              colorScheme="orange"
+              disabled={object.paid}
+              className={`${
+                !object.paid
+                  ? "hover:cursor-pointer"
+                  : "hover:cursor-not-allowed"
+              }`}
+            >
               Edit Sale Order
             </Button>
           </ModalFooter>
