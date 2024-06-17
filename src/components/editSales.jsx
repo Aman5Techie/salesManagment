@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -13,19 +13,13 @@ import {
   Input,
   useDisclosure,
   Select,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
   Box,
   useToast,
   InputGroup,
   useColorMode,
   IconButton,
 } from "@chakra-ui/react";
-import { AddIcon } from "@chakra-ui/icons";
-import products from "../database/product";
+import PropTypes from 'prop-types';
 import { FiMoreHorizontal } from "react-icons/fi";
 import { getTime } from "../functions/getTime";
 import customer from "../database/user";
@@ -275,5 +269,14 @@ const EditSales = ({ object }) => {
     </>
   );
 };
+
+
+
+
+
+EditSales.propTypes = {
+  object : PropTypes.object
+};
+
 
 export default EditSales;

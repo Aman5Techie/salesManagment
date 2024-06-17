@@ -19,6 +19,5 @@ const useCheckToken = (bool) => {
     }
   }, [user, navigate, bool]);
 };
-// login
 
 export { useCheckToken };

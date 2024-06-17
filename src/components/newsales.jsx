@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -49,23 +49,61 @@ const NewSales = () => {
       setSelectedProducts([...selectedProducts, productId]);
     }
   };
+  const validationFunction = (e) => {
+    selectedProducts.forEach((productId) => {
+      const prod = products.find((e) => {
+        return e.id == productId;
+      });
+
+      prod.sku.forEach((sku, i) => {
+        const quantity = parseInt(
+          document.getElementById(`quantity-${productId}-${i}`).value,
+          10
+        );
+        if (sku.quantity_in_inventory < quantity) {
+          e.preventDefault();
+          toast({
+            title: "Invalid quantities",
+            description: `Quantities in ${prod.name}, SkU ${i+1} are higher than available stock.`,
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      });
+    });
+  };
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
     let price = 0;
+
     data.items = selectedProducts.map((productId) => {
       const product = products.find((p) => p.id === productId);
-      const currprice = product.sku[0].selling_price;
-      const qunatity = parseInt(formData.get(`quantity-${productId}`), 10) || 0
-      price += currprice*qunatity
+
+      const skus = product.sku.map((sku, i) => {
+        const qunatity =
+          parseInt(formData.get(`quantity-${productId}-${i}`), 10) || 0;
+        const currprice = sku.selling_price;
+        price += currprice * qunatity;
+        return {
+          sku_id: product.sku[i].id,
+          price: currprice,
+          quantity: qunatity,
+        };
+      });
+
+      console.log(productId, skus);
+
       return {
-        sku_id: product.sku[0].id,
-        price: currprice,
-        quantity:qunatity,
+        productId,
+        skus,
       };
     });
+
+    // quantity-${productId}-${i}
 
     const orderData = {
       customer_id: data.customer,
@@ -73,11 +111,11 @@ const NewSales = () => {
       invoice_no: data.invoice_no,
       items: data.items,
       paid: false,
-      lastModified : "Modification not done",
-      price : price
+      lastModified: "Modification not done",
+      price: price,
     };
 
-    dispatch(addactiveOrder(orderData))
+    dispatch(addactiveOrder(orderData));
     console.log(orderData);
     setSelectedProducts([]);
     onClose();
@@ -94,21 +132,12 @@ const NewSales = () => {
     const after_remove = selectedProducts.filter((e) => e != id);
     setSelectedProducts(after_remove);
   };
-
-  const isQuantityValid = (productId, quantity) => {
-    const product = products.find((p) => p.id === productId);
-    const availableQuantity = product.sku[0].quantity_in_inventory;
-    return quantity <= availableQuantity;
-  };
-
   const closeForm = () => {
     setSelectedProducts([]);
-    setValue("")
+    setValue("");
     setInvoiceDate("");
     onClose();
   };
-
- 
 
   // Filter customers based on the search term
   const filteredCustomers = customer.filter((cus) => {
@@ -234,17 +263,19 @@ const NewSales = () => {
                           <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel pb={4}>
-                          {product.sku.map((sku) => (
+                          {product.sku.map((sku, i) => (
                             <Box key={sku.id} mb={4}>
                               <FormControl>
-                                <FormLabel htmlFor={`quantity-${productId}`}>
+                                <FormLabel
+                                  htmlFor={`quantity-${productId}-${i}`}
+                                >
                                   Quantity (Available ={" "}
                                   {sku.quantity_in_inventory}) (Price ={" "}
                                   {sku.selling_price})
                                 </FormLabel>
                                 <Input
-                                  id={`quantity-${productId}`}
-                                  name={`quantity-${productId}`}
+                                  id={`quantity-${productId}-${i}`}
+                                  name={`quantity-${productId}-${i}`}
                                   placeholder="Enter quantity"
                                   type="number"
                                 />
@@ -269,25 +300,19 @@ const NewSales = () => {
               colorScheme="orange"
               onClick={(e) => {
                 // Validate input quantities before submitting the form
-                const invalidProducts = selectedProducts.filter((productId) => {
-                  const quantity = parseInt(
-                    document.getElementById(`quantity-${productId}`).value,
-                    10
-                  );
-                  return !isQuantityValid(productId, quantity);
-                });
+                validationFunction(e);
 
-                if (invalidProducts.length > 0) {
-                  e.preventDefault();
-                  toast({
-                    title: "Invalid quantities",
-                    description:
-                      "Some quantities are higher than available stock.",
-                    status: "error",
-                    duration: 5000,
-                    isClosable: true,
-                  });
-                }
+                // if (invalidProducts.length > 0) {
+                //   e.preventDefault();
+                //   toast({
+                //     title: "Invalid quantities",
+                //     description:
+                //       "Some quantities are higher than available stock.",
+                //     status: "error",
+                //     duration: 5000,
+                //     isClosable: true,
+                //   });
+                // }
               }}
             >
               Add Sale Order

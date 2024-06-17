@@ -1,5 +1,3 @@
-import React from "react";
-import PropTypes from "prop-types";
 import Nav from "./components/navbar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/login";
